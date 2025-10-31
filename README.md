@@ -83,6 +83,24 @@ source solo_venv/bin/activate
 
 </details>
 
+## Quick İnstallation for Windows (Automated):
+For Windows users, we provide an automated installation script that handles all the setup steps:
+```
+# Clone the repository
+git clone https://github.com/GetSoloTech/solo-server.git
+cd solo-server
+
+# Run the automated installation
+powershell -ExecutionPolicy Bypass -File .\install_windows.ps1
+
+# After installation, activate the virtual environment:
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+.\solo_venv\Scripts\Activate.ps1
+
+# Then verify your setup
+solo --help          
+```
+
 ## Solo Commands:
 
 ```bash
