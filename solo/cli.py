@@ -39,6 +39,33 @@ def setup():
 
 
 @app.command()
+def login():
+    """
+    Authenticate with Solo by getting a token from hub.getsolo.tech
+    """
+    from solo.commands.login import login as _login
+    _login()
+
+
+@app.command()
+def logout():
+    """
+    Log out from Solo by removing the authentication token
+    """
+    from solo.commands.login import logout as _logout
+    _logout()
+
+
+@app.command()
+def whoami():
+    """
+    Display current authentication status and user information
+    """
+    from solo.commands.login import whoami as _whoami
+    _whoami()
+
+
+@app.command()
 def serve(
     model: Optional[str] = typer.Option(None, "--model", "-m", help="""Model name or path. Can be:
     - HuggingFace repo ID (e.g., 'meta-llama/Llama-3.2-1B-Instruct')
