@@ -1131,6 +1131,10 @@ def training_mode(config: dict, auto_use: bool = False):
             wandb=wandb_config,
             seed=1000,
             resume=resume_training,  # Use the resume flag we determined above
+            rename_map={
+                "observation.images.side": "observation.images.camera1",
+                "observation.images.up": "observation.images.camera2"
+            },
         )
         
         typer.echo("🎓 Starting training... This may take a while.")
