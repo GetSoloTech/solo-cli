@@ -1,7 +1,56 @@
 import typer
+import sys
 from typing import Optional
 
 app = typer.Typer()
+
+# Commands that don't require authentication
+NO_AUTH_COMMANDS = {'login', 'setup', 'help'}
+
+@app.callback(invoke_without_command=True)
+def check_auth_middleware(ctx: typer.Context):
+    """
+    Middleware to check authentication before command execution.
+    Only triggers for commands that require authentication.
+    """
+    # If callback was invoked without a command (e.g., just 'solo'), show help
+    if ctx.invoked_subcommand is None:
+        return
+    
+    # Get the command name
+    command_name = ctx.invoked_subcommand
+    
+    # Skip auth check for commands that don't require it
+    if command_name in NO_AUTH_COMMANDS:
+        return
+    
+    # Check if user is authenticated
+    try:
+        from solo.auth.auth import is_authenticated
+        
+        # Check authentication on startup
+        if not is_authenticated():
+            # Not authenticated, trigger login flow
+            from solo.commands.login import login
+            login()
+            # After login, verify authentication was successful
+            # (login() will raise typer.Exit if it fails, so if we get here, it succeeded)
+            if not is_authenticated():
+                # This shouldn't happen, but handle it gracefully
+                sys.exit(1)
+    except KeyboardInterrupt:
+        # User cancelled login
+        sys.exit(0)
+    except (SystemExit, typer.Exit):
+        # Re-raise system exits (from login or sys.exit)
+        raise
+    except ImportError:
+        # If auth module can't be imported, allow command to proceed (graceful degradation)
+        pass
+    except Exception:
+        # For other errors during auth check, allow command to proceed
+        # This prevents auth issues from blocking commands
+        pass
 
 # Lazy-loaded commands to improve CLI startup performance
 
@@ -105,6 +154,16 @@ def download(model: str):
     """
     from solo.commands.download_hf import download as _download
     _download(model)
+
+
+@app.command()
+def login():
+    """
+    Login to Solo CLI using device code flow.
+    Displays a user code and verification URL, then polls for authorization.
+    """
+    from solo.commands.login import login as _login
+    _login()
 
 
 if __name__ == "__main__":
