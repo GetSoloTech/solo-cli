@@ -26,7 +26,7 @@ setup(
         "rich",
         "huggingface_hub",
         "pydantic",
-        "lerobot[feetech,dynamixel] @ git+https://github.com/zeeshaan-ai/lerobot.git",
+        "lerobot[feetech,dynamixel] @ git+https://github.com/GetSoloTech/solo-bot.git@main",
         "transformers",
         "accelerate",
         "num2words"
