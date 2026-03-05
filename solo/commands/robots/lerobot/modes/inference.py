@@ -169,40 +169,70 @@ def inference_mode(config: dict, auto_use: bool = False):
 
         follower_id = prompt_arm_id(config, "follower", robot_type)
         
-        # Step 1: Get policy path first to determine if HuggingFace auth is needed
+        # Step 1: Get policy path first to determine if auth is needed
         typer.echo("\n🤖 Step 1: Policy Configuration")
-        typer.echo("💡 You can use:")
-        typer.echo("   • HuggingFace model ID (e.g., lerobot/act_so100_test)")
-        typer.echo("   • Local path (e.g., /path/to/model or ./outputs/train/checkpoint)")
-        
-        # Auto-detect latest local trained model
-        default_policy_path = _find_latest_local_model()
-        if default_policy_path:
-            typer.echo(f"\n📂 Found latest local model: {default_policy_path}")
-        
-        policy_path = Prompt.ask("Enter policy path", default=default_policy_path or "")
-        
-        # Check if it's a local path
-        expanded_path = Path(policy_path).expanduser()
-        is_local_policy = expanded_path.exists() or policy_path.startswith("/") or policy_path.startswith("./") or policy_path.startswith("~")
-        
-        # Validate local path exists
-        if is_local_policy:
+
+        # Choose model source
+        model_source = Prompt.ask(
+            "Where is your model?",
+            choices=["solo", "huggingface", "local"],
+            default="solo",
+        )
+
+        if model_source == "solo":
+            # Solo Hub model
+            from solo.hub.auth import ensure_authenticated
+            from solo.hub.errors import SoloAuthError
+            try:
+                ensure_authenticated()
+            except SoloAuthError:
+                typer.echo("❌ Not logged in to Solo Hub. Run 'solo login' first.")
+                return
+
+            typer.echo("💡 Enter your Solo Hub model ID (e.g., org/model_name)")
+            solo_model_id = Prompt.ask("Solo Hub model ID")
+            policy_path = f"solo:{solo_model_id}"
+            typer.echo(f"\n📡 Using Solo Hub model: {solo_model_id}")
+
+        elif model_source == "local":
+            typer.echo("💡 Enter a local path (e.g., /path/to/model or ./outputs/train/checkpoint)")
+
+            # Auto-detect latest local trained model
+            default_policy_path = _find_latest_local_model()
+            if default_policy_path:
+                typer.echo(f"📂 Found latest local model: {default_policy_path}")
+
+            policy_path = Prompt.ask("Enter local model path", default=default_policy_path or "")
+            expanded_path = Path(policy_path).expanduser()
             if not expanded_path.exists():
                 typer.echo(f"❌ Local model path not found: {policy_path}")
                 typer.echo("💡 Please check the path and try again.")
                 return
             typer.echo(f"\n📂 Using local model: {policy_path}")
+
         else:
-            # Step 2: HuggingFace authentication (only if not using local model)
-            typer.echo("\n📋 Step 2: HuggingFace Authentication")
-            typer.echo("💡 HuggingFace authentication is required to download pre-trained models.")
-            login_success, hf_username = authenticate_huggingface()
-            
-            if not login_success:
-                typer.echo("❌ Cannot proceed with inference without HuggingFace authentication.")
-                typer.echo("💡 If using a local model, provide the full path (e.g., /path/to/model or ./model)")
-                return
+            # HuggingFace model
+            typer.echo("💡 Enter a HuggingFace model ID (e.g., lerobot/act_so100_test)")
+
+            # Auto-detect latest local trained model as fallback default
+            default_policy_path = _find_latest_local_model()
+
+            policy_path = Prompt.ask("HuggingFace model ID", default=default_policy_path or "")
+
+            # Check if user accidentally entered a local path
+            expanded_path = Path(policy_path).expanduser()
+            if expanded_path.exists():
+                typer.echo(f"\n📂 Detected local model: {policy_path}")
+            else:
+                # HuggingFace authentication required
+                typer.echo("\n📋 Step 2: HuggingFace Authentication")
+                typer.echo("💡 HuggingFace authentication is required to download pre-trained models.")
+                login_success, hf_username = authenticate_huggingface()
+
+                if not login_success:
+                    typer.echo("❌ Cannot proceed with inference without HuggingFace authentication.")
+                    typer.echo("💡 If using a local model, provide the full path (e.g., /path/to/model or ./model)")
+                    return
         
         # Step 3: Inference configuration
         typer.echo("\n⚙️ Step 3: Inference Configuration")

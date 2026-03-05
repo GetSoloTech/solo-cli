@@ -263,3 +263,8 @@ def status():
         console.print(services_table)
     else:
         typer.echo("\n⚠️  No services running.")
+
+    console.print(
+        "\nTo check a model's training status, run [bold]solo status org/model_name[/bold].",
+        style="dim",
+    )
