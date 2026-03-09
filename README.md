@@ -14,7 +14,7 @@ Simple CLI for Physical AI:
 </div>
 
 <p align="center">
-  <img src="media/solo_symbol.jpeg" alt="Solo Tech" width="300" height="300">
+  <img src="media/solo-banner.png" alt="Solo Tech" width="500">
 </p>
 
 ---
