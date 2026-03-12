@@ -33,18 +33,14 @@ def _check_model_status(model_info: dict, repo_id: str) -> None:
 def _flatten_files_response(files_data: dict) -> list[dict]:
     """
     Flatten the files API response (dict of folder->file_list) into a flat list.
-    Each item gets a 'path' field with the full relative path.
+    Each item gets a 'path' field with the filename.
+
     """
     flat = []
-    for folder, files in files_data.items():
+    for _folder, files in files_data.items():
         for f in files:
             name = f.get("name", "")
-            # If the folder is a non-empty key, prefix the filename
-            if folder and folder != ".":
-                path = f"{folder}/{name}"
-            else:
-                path = name
-            flat.append({**f, "path": path})
+            flat.append({**f, "path": name})
     return flat
 
 

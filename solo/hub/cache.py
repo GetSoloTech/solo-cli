@@ -290,7 +290,7 @@ def _download_file_chunked(
     ranges = []
     for i in range(CHUNK_CONNECTIONS):
         start = i * chunk_size
-        end = file_size if i == CHUNK_CONNECTIONS - 1 else (i + 1) * chunk_size
+        end = None if i == CHUNK_CONNECTIONS - 1 else (i + 1) * chunk_size
         part_path = blobs_dir / f"{slug}.part{i}"
         if force and part_path.exists():
             part_path.unlink()
