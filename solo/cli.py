@@ -76,10 +76,20 @@ def serve(
 
 
 @app.command()
-def status():
-    """Check running models, system status, and configuration."""
-    from solo.commands.status import status as _status
-    _status()
+def status(
+    model: Optional[str] = typer.Argument(None, help="Model identifier (org/model_name) to check training status on Solo Hub"),
+):
+    """Check system status, or check a model's training status on Solo Hub.
+
+    Without arguments: shows running models, system status, and configuration.
+    With a model identifier: checks the model's training status on Solo Hub.
+    """
+    if model:
+        from solo.commands.model_status import model_status as _model_status
+        _model_status(model)
+    else:
+        from solo.commands.status import status as _status
+        _status()
 
 
 @app.command(name="list")
@@ -114,12 +124,47 @@ def stop(name: str = typer.Option("", help="Server type to stop (e.g., 'ollama',
 
 
 @app.command()
-def download(model: str):
+def login(
+    force: bool = typer.Option(False, "--force", "-f", help="Force re-authentication even if already logged in"),
+):
     """
-    Downloads a Hugging Face model using the huggingface repo id.
+    Log in to Solo Hub using device-code authentication.
     """
-    from solo.commands.download_hf import download as _download
-    _download(model)
+    from solo.commands.login import login as _login
+    _login(force=force)
+
+
+@app.command()
+def logout():
+    """
+    Log out of Solo Hub by removing stored credentials.
+    """
+    from solo.commands.logout import logout as _logout
+    _logout()
+
+
+@app.command()
+def whoami():
+    """
+    Display your Solo Hub profile, organization, and subscription info.
+    """
+    from solo.commands.whoami import whoami as _whoami
+    _whoami()
+
+
+@app.command()
+def download(
+    model: str = typer.Argument(..., help="Model identifier: 'org/model_name' or 'solo:org/model_name'"),
+    local_dir: str = typer.Option(None, "--local-dir", "-d", help="Download into a local directory instead of the cache"),
+):
+    """
+    Downloads a model from Solo Hub.
+
+    Accepts both 'org/model_name' and 'solo:org/model_name' formats.
+    Requires authentication via 'solo login' first.
+    """
+    from solo.commands.download import download as _download
+    _download(model, local_dir=local_dir)
 
 
 @app.command(name="setup-usb")

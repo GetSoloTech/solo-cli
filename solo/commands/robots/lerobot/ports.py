@@ -4,11 +4,38 @@ Port detection utilities for LeRobot
 
 import platform
 import subprocess
+import threading
 import time
 from pathlib import Path
 from typing import List, Optional
 import typer
 from rich.prompt import Prompt
+
+
+def _input_with_timeout(timeout: float = None) -> bool:
+    """
+    Wait for user to press Enter, with an optional timeout.
+
+    Returns True if Enter was pressed, False if timed out.
+    If timeout is None, waits indefinitely (regular input behavior).
+    """
+    if timeout is None:
+        input()
+        return True
+
+    received = threading.Event()
+
+    def wait_for_input():
+        try:
+            input()
+            received.set()
+        except EOFError:
+            pass
+
+    thread = threading.Thread(target=wait_for_input, daemon=True)
+    thread.start()
+
+    return received.wait(timeout)
 
 
 def find_available_ports() -> List[str]:
@@ -58,7 +85,7 @@ def find_available_ports() -> List[str]:
                 return []
 
 
-def detect_arm_port(arm_type: str, robot_type: str = None, use_auto_detect: bool = True) -> tuple[Optional[str], Optional[str]]:
+def detect_arm_port(arm_type: str, robot_type: str = None, use_auto_detect: bool = True, timeout: float = None) -> tuple[Optional[str], Optional[str]]:
     """
     Detect the port for a specific arm (leader or follower)
     
@@ -93,9 +120,14 @@ def detect_arm_port(arm_type: str, robot_type: str = None, use_auto_detect: bool
     typer.echo(f"Available ports: {ports_before}")
     
     # Ask user to plug in the arm
-    typer.echo(f"\n📱 Please plug in your {arm_type} arm and press Enter when connected.")
-    input()
-    
+    if timeout:
+        typer.echo(f"\n📱 Please plug in your {arm_type} arm and press Enter when connected. (timeout: {int(timeout)}s)")
+    else:
+        typer.echo(f"\n📱 Please plug in your {arm_type} arm and press Enter when connected.")
+    if not _input_with_timeout(timeout):
+        typer.echo(f"\n⏰ Timed out waiting for {arm_type} arm connection.")
+        return None, detected_robot_type
+
     time.sleep(1.0)  # Allow time for port to be detected
     
     # Get ports after connection
@@ -123,9 +155,14 @@ def detect_arm_port(arm_type: str, robot_type: str = None, use_auto_detect: bool
             typer.echo(f"Let's identify the correct port by unplugging and replugging.")
             
             # Ask user to unplug the arm
-            typer.echo(f"\n📱 Please UNPLUG your {arm_type} arm and press Enter when disconnected.")
-            input()
-            
+            if timeout:
+                typer.echo(f"\n📱 Please UNPLUG your {arm_type} arm and press Enter when disconnected. (timeout: {int(timeout)}s)")
+            else:
+                typer.echo(f"\n📱 Please UNPLUG your {arm_type} arm and press Enter when disconnected.")
+            if not _input_with_timeout(timeout):
+                typer.echo(f"\n⏰ Timed out waiting for {arm_type} arm disconnection.")
+                return None, detected_robot_type
+
             time.sleep(1.0)  # Allow time for port to be released
             
             # Get ports after disconnection
@@ -137,7 +174,9 @@ def detect_arm_port(arm_type: str, robot_type: str = None, use_auto_detect: bool
                 port = missing_ports[0]
                 typer.echo(f"✅ Identified {arm_type} arm port: {port}")
                 typer.echo(f"📱 Please plug your {arm_type} arm back in and press Enter.")
-                input()
+                if not _input_with_timeout(timeout):
+                    typer.echo(f"\n⏰ Timed out waiting for {arm_type} arm reconnection.")
+                    return None, detected_robot_type
                 time.sleep(1.0)  # Allow time for reconnection
                 # Try to detect robot type
                 if detected_robot_type is None:
@@ -162,13 +201,17 @@ def detect_arm_port(arm_type: str, robot_type: str = None, use_auto_detect: bool
                 if 1 <= choice <= len(missing_ports):
                     port = missing_ports[choice - 1]
                     typer.echo(f"📱 Please plug your {arm_type} arm back in and press Enter.")
-                    input()
+                    if not _input_with_timeout(timeout):
+                        typer.echo(f"\n⏰ Timed out waiting for {arm_type} arm reconnection.")
+                        return None, detected_robot_type
                     time.sleep(1.0)
                     return port, detected_robot_type
                 else:
                     port = missing_ports[0]
                     typer.echo(f"📱 Please plug your {arm_type} arm back in and press Enter.")
-                    input()
+                    if not _input_with_timeout(timeout):
+                        typer.echo(f"\n⏰ Timed out waiting for {arm_type} arm reconnection.")
+                        return None, detected_robot_type
                     time.sleep(1.0)
                     return port, detected_robot_type
         else:
@@ -242,9 +285,9 @@ def detect_and_retry_ports(leader_port: str, follower_port: str, config: dict = 
     """
     typer.echo("🔍 Detecting new ports...")
     
-    # Detect new ports
-    new_leader_port, _ = detect_arm_port("leader")
-    new_follower_port, _ = detect_arm_port("follower")
+    # Detect new ports with a timeout so we don't hang forever on retry
+    new_leader_port, _ = detect_arm_port("leader", timeout=30)
+    new_follower_port, _ = detect_arm_port("follower", timeout=30)
     
     if new_leader_port and new_follower_port:
         typer.echo(f"✅ Found new ports:")

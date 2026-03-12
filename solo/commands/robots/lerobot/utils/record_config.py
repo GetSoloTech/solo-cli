@@ -173,18 +173,30 @@ def unified_record_config(
         policy_path = mode_specific_kwargs.get('policy_path')
         if not policy_path:
             raise ValueError("Policy path is required for inference mode")
-        
-        # Load policy configuration
+
+        # Resolve Solo Hub references to a local snapshot directory so that
+        # all downstream loaders (config, weights, processor pipelines) can
+        # read files directly without needing solo: awareness.
+        from solo.hub import is_solo_ref, parse_solo_ref
+        if is_solo_ref(policy_path):
+            from solo.hub import solo_snapshot_download
+            clean_id = parse_solo_ref(policy_path)
+            typer.echo(f"Downloading model from Solo Hub: {clean_id}...")
+            local_model_path = solo_snapshot_download(repo_id=clean_id)
+            typer.echo(f"Model cached at: {local_model_path}")
+        else:
+            local_model_path = policy_path
+
+        # Load policy configuration from the resolved local path
         policy_config = PreTrainedConfig.from_pretrained(
-            policy_path,
+            local_model_path,
             cache_dir=mode_specific_kwargs.get('cache_dir'),
             local_files_only=False,
             force_download=False
         )
-        policy_config.pretrained_path = policy_path
-        
+        policy_config.pretrained_path = local_model_path
+
         # Generate unique repo_id for inference
-        policy_path = mode_specific_kwargs.get('policy_path', '')
         policy_name = policy_path.split('/')[-1] if '/' in policy_path else policy_path
         
         # Generate unique repo_id with increment
