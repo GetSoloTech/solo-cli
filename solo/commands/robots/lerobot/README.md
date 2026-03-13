@@ -6,16 +6,35 @@ Use `solo robo` command to run a complete robotics workflow with LeRobot: motor 
 
 **To install solo-cli, follow our [installation guide](https://github.com/GetSoloTech/solo-cli)**
 
+### Before You Start
+
+> **Calibration is MANDATORY.** Your robot arms will not respond to movement commands until they are calibrated. Calibration must be completed before teleoperation, recording, replay, or inference. There are no shortcuts -- run `solo robo --calibrate all` first.
+>
+> **Calibration is interactive.** You must run it in a regular terminal (Command Prompt, PowerShell, or bash) -- not from AI coding tools like Claude Code, Codex, or Cursor. The calibration process requires you to physically move the arm and press keys at specific prompts.
+
+### Understanding Your Arms
+
+If you're using SO100/SO101 arms, you have two physically different arms:
+
+| | Leader Arm | Follower Arm |
+|---|---|---|
+| **Voltage** | 5V (USB-powered) | 12V (external power supply) |
+| **Purpose** | You move it by hand to control the follower | Mirrors the leader's movements with motor torque |
+| **Self-drives?** | No -- sensors only, no motor torque | Yes -- motors actively move to match the leader |
+| **Needed for** | Teleop, Recording | Teleop, Recording, Replay, Inference |
+
+The leader arm is a sensor-only input device. It cannot move on its own. The follower arm is the one that does the physical work.
+
 ### Quick start
 
 ```bash
-# 1) Calibrate (both arms)
+# 1) Calibrate (both arms) -- REQUIRED before anything else works
 solo robo --calibrate all  # leader, follower, all
 
-# 2) Teleoperate
+# 2) Teleoperate (move leader by hand, follower mirrors it)
 solo robo --teleop
 
-# 3) Record dataset
+# 3) Record dataset (teleop while saving data for training)
 solo robo --record
 
 # 4) Replay a recorded episode
@@ -64,6 +83,8 @@ The robot type is auto-detected when you connect your arms, or you can manually 
 
 ## 1) Calibrate
 
+> **This step is required.** Motors will not respond to goal position commands until calibration is complete. All other modes (teleop, record, replay, inference) depend on this.
+
 Calibrate the leader and/or follower arm(s) after motor IDs are set.
 
 ```bash
@@ -83,9 +104,11 @@ solo robo --calibrate follower
 - For each arm selected, LeRobot's calibration is launched and you follow on-screen instructions.
 
 ### Tips/Notes
+- **Run calibration in a regular terminal** (Command Prompt, PowerShell, or bash). Calibration is interactive and requires you to follow on-screen prompts, move the arm to specific positions, and press keys. It cannot be run from AI coding assistants (Claude Code, Codex, Cursor, etc.) or any non-interactive shell, as those environments do not support interactive terminal input.
 - Calibrate in a safe, clear workspace; follow the on-screen instructions carefully.
 - If either arm fails to calibrate, you can rerun calibration for that arm only.
 - Once both arms are calibrated, you're ready for Teleop and Recording.
+- On Windows, the first calibration run may take a while to start as it loads PyTorch and model dependencies in the background. This is normal.
 
 ---
 
@@ -313,11 +336,18 @@ solo robo --diagnose
 
 ## Troubleshooting
 
+- **"Motors aren't moving"**: The most common cause is that calibration has not been run. Motors will not respond to position commands until `solo robo --calibrate all` is completed. This applies even if `--scan` shows motors are connected and responding.
+- **Trying to move the leader arm programmatically**: The leader arm (5V) has no motor torque. It is a passive input device -- you move it by hand. Only the follower arm (12V) can self-drive.
 - **Connection failed / wrong port**: The tool will attempt to re-detect ports and retry once. If it still fails, unplug/replug each arm and re-run the mode.
 - **Motor communication / sync read errors**: Run `solo robo --scan` or `solo robo --diagnose` to verify motor connections. Check power supply (12V for follower, 5V for leader on SO arms).
 - **Dataset already exists**: You will be prompted to resume or rename. Resuming continues appending episodes to the existing dataset.
 - **Incomplete dataset directory**: If a previous recording failed, you'll be prompted to delete the incomplete directory or choose a new name.
 - **HuggingFace authentication required**: Needed for downloading trained policies (Inference) and optionally for pushing datasets/models (Record/Train). Local models skip authentication.
-- **Windows symlink warnings**: Symlink warnings are suppressed for HF Hub downloads by the tool when needed.
 - **No cameras detected**: You can proceed without cameras; functionality remains available.
 - **RealMan connection issues**: Ensure the robot is powered, network-connected, and the IP/port settings in `realman_config.yaml` are correct.
+
+### Windows-Specific Issues
+
+- **UnicodeEncodeError (cp1252)**: On Windows, the default console encoding (cp1252) cannot display emoji characters used in some CLI output. If you see `UnicodeEncodeError: 'charmap' codec can't encode character`, set the environment variable `PYTHONIOENCODING=utf-8` before running solo commands, or run your terminal with UTF-8 support (`chcp 65001` in Command Prompt).
+- **Calibration hangs on startup**: The first run of calibration loads PyTorch and ML model dependencies in a background thread. On Windows this can take significantly longer than on Linux/macOS (1-3 minutes is normal for the first run). Subsequent runs are faster due to caching.
+- **Windows symlink warnings**: Symlink warnings are suppressed for HF Hub downloads by the tool when needed.

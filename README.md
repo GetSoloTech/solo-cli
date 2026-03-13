@@ -119,8 +119,10 @@ solo --help
 ## Interactive CLI for Robots
 **Find more details here: [Solo Robo Docs](solo/commands/robots/lerobot/README.md)**
 
+> **Important:** Calibration (`--calibrate`) must be completed before any other robot command will work. Motors do not respond to movement commands until calibrated.
+
 ```bash
-# Calibrate → Teleop
+# Calibrate first (required before teleop, record, replay, or inference)
 solo robo --calibrate all
 solo robo --teleop
 
