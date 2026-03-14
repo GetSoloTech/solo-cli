@@ -1,7 +1,7 @@
 import os
 
-# API base URL (switch to prod by setting SOLO_HUB_URL env var)
-SOLO_HUB_DEFAULT_URL = "https://devhub.getsolo.tech"
+# API base URL
+SOLO_HUB_DEFAULT_URL = "https://hub.getsolo.tech"
 SOLO_HUB_API_BASE = os.environ.get("SOLO_HUB_URL", SOLO_HUB_DEFAULT_URL)
 
 # Local paths
