@@ -87,13 +87,9 @@ source .venv/bin/activate  # Windows: .venv\Scripts\activate
 ### Install
 
 ```bash
-# Option 1: From source (recommended for development & hackathons)
 git clone https://github.com/GetSoloTech/solo-cli.git
 cd solo-cli
 uv pip install -e .
-
-# Option 2: From PyPI
-uv pip install solo-cli
 ```
 
 
@@ -101,9 +97,12 @@ uv pip install solo-cli
 
 ```bash
 solo --help
-                                                                                                           
+
 ╭─ Commands ────────────────────────────────────────────────────────────────────────────────────────────────────────╮
 │ setup      Set up Solo CLI environment with interactive prompts and saves configuration to config.json.           │
+│ login      Authenticate with Solo Hub using device-code login flow.                                               │
+│ whoami     Display current user profile, organization, and subscription info.                                     │
+│ download   Download a model from Solo Hub (format: org/model_name or solo:org/model_name).                        │
 │ robo       Robotics operations: motor setup, calibration, teleoperation, data recording, training, and inference  │
 │ serve      Start a model server with the specified model.                                                         │
 │ status     Check running models, system status, and configuration.                                                │
@@ -111,16 +110,35 @@ solo --help
 │ test       Test if the Solo CLI is running correctly. Performs an inference test to verify server functionality.  │
 │ stop       Stops Solo CLI services. You can specify a server type with 'ollama', 'vllm', or 'llama.cpp'           │
 │            Otherwise, all Solo services will be stopped.                                                          │
-│ download   Downloads a Hugging Face model using the huggingface repo id.                                          │
 ╰───────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
 
 
 ```
+
+## Solo Hub - Authentication and Model Downloads
+
+```bash
+# Authenticate with Solo Hub
+solo login
+
+# Force re-authentication
+solo login --force
+
+# Check your profile and subscription
+solo whoami
+
+# Download a model from Solo Hub
+solo download org/model_name
+
+# Download to a specific local directory
+solo download org/model_name --local-dir ./my-models
+```
+
 ## Interactive CLI for Robots
 **Find more details here: [Solo Robo Docs](solo/commands/robots/lerobot/README.md)**
 
 ```bash
-# Calibrate → Teleop
+# Calibrate -> Teleop
 solo robo --calibrate all
 solo robo --teleop
 
@@ -182,7 +200,7 @@ curl http://localhost:5070/api/chat -d '{
 
 ## Configuration
 Navigate to config file
-`.solo/config.json` 
+`.solo/config.json`
 
 ```json
 {
@@ -223,4 +241,4 @@ Navigate to config file
 2. Create feature branch (`git checkout -b feature/name`)
 3. Commit changes (`git commit -m 'Add feature'`)
 4. Push to branch (`git push origin feature/name`)
-5. Open Pull Request 
+5. Open Pull Request
