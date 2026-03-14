@@ -264,6 +264,12 @@ def inference_mode(config: dict, auto_use: bool = False):
         }
         save_inference_config(config, inference_args)
     
+    # Pre-flight dependency and hardware check
+    from solo.utils.preflight import run_preflight_check
+    if not run_preflight_check(policy_path):
+        typer.echo("Aborting inference.")
+        return
+
     # Import lerobot inference components
     from lerobot.scripts.lerobot_record import record
     
