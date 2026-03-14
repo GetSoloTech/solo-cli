@@ -14,21 +14,8 @@ Simple CLI for Physical AI:
 </div>
 
 <p align="center">
-  <img src="media/solo_symbol.jpeg" alt="Solo Tech" width="300" height="300">
+  <img src="media/solo-banner.png" alt="Solo Tech" width="500">
 </p>
-
----
-
-> **📢 IMPORTANT: Package Renamed**
-> 
-> This package has been renamed from **`solo-server`** to **`solo-cli`**!
-> 
-> If you're upgrading from `solo-server`, please see the **[Migration Guide](MIGRATION.md)** for upgrade instructions.
-> 
-> - **Old**: `pip install solo-server`
-> - **New**: `pip install solo-cli`
-> - **Config Migration**: `~/.solo_server` → `~/.solo`
-> - **CLI Command**: Still `solo` (unchanged) ✅
 
 ---
 
@@ -50,24 +37,60 @@ Solo-CLI powers users of Physical AI Inference by providing access to efficiency
 
 ## Installation
 
-> **Upgrading from solo-server?** See the [Migration Guide](MIGRATION.md) first.
+### Prerequisites
 
-First, install the uv package manager and setup a virtual environment as
-explained in [prereq.md](prereq.md)
+<details>
+<summary><b>Git LFS</b> (required)</summary>
+
+Solo-CLI depends on [solo-bot](https://github.com/GetSoloTech/solo-bot) which uses Git LFS. If you haven't installed it before:
+
+```bash
+# Mac
+brew install git-lfs
+
+# Ubuntu / Debian
+sudo apt-get install git-lfs
+
+# Windows (pick one)
+winget install GitHub.GitLFS
+```
+
+Then run once:
+
+```bash
+git lfs install
+```
+
+</details>
+
+<details>
+<summary><b>uv package manager</b> (recommended)</summary>
+
+```bash
+# Mac & Linux
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# Windows Powershell
+powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+```
+
+</details>
+
+### Setup
+
+```bash
+# Create and activate a uv virtual environment (Python 3.12 recommended)
+uv venv --python 3.12
+source .venv/bin/activate  # Windows: .venv\Scripts\activate
+```
+
+### Install
 
 ```bash
 git clone https://github.com/GetSoloTech/solo-cli.git
 cd solo-cli
 uv pip install -e .
 ```
-
-## 💻 Solo Tech Installation Demo 
-
-<p align="center">
-  <img src="media/SoloTechInstallationGIF.gif" alt="Solo Tech Installation Demo" width="600" height="450">
-</p>
-
-**To see the full video, [click here to watch on YouTube](https://www.youtube.com/watch?v=x2pVuYr08vk).**
 
 
 ## Solo Commands:
@@ -110,11 +133,12 @@ solo download org/model_name
 # Download to a specific local directory
 solo download org/model_name --local-dir ./my-models
 ```
+
 ## Interactive CLI for Robots
 **Find more details here: [Solo Robo Docs](solo/commands/robots/lerobot/README.md)**
 
 ```bash
-# Calibrate → Teleop
+# Calibrate -> Teleop
 solo robo --calibrate all
 solo robo --teleop
 
@@ -176,7 +200,7 @@ curl http://localhost:5070/api/chat -d '{
 
 ## Configuration
 Navigate to config file
-`.solo/config.json` 
+`.solo/config.json`
 
 ```json
 {
@@ -217,4 +241,4 @@ Navigate to config file
 2. Create feature branch (`git checkout -b feature/name`)
 3. Commit changes (`git commit -m 'Add feature'`)
 4. Push to branch (`git push origin feature/name`)
-5. Open Pull Request 
+5. Open Pull Request
