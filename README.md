@@ -52,19 +52,13 @@ Solo-CLI powers users of Physical AI Inference by providing access to efficiency
 
 > **Upgrading from solo-server?** See the [Migration Guide](MIGRATION.md) first.
 
-First, install the uv package manager and setup a virtual environment as 
+First, install the uv package manager and setup a virtual environment as
 explained in [prereq.md](prereq.md)
 
 ```bash
-
-#Choose one of the following for solo-cli installation
-#1. Install solo cli from source (Strongly Recommended for Hackathons)
 git clone https://github.com/GetSoloTech/solo-cli.git
 cd solo-cli
 uv pip install -e .
-
-#2. Install solo cli from PyPI python manager
-uv pip install solo-cli
 ```
 
 ## 💻 Solo Tech Installation Demo 
@@ -80,9 +74,12 @@ uv pip install solo-cli
 
 ```bash
 solo --help
-                                                                                                           
+
 ╭─ Commands ────────────────────────────────────────────────────────────────────────────────────────────────────────╮
 │ setup      Set up Solo CLI environment with interactive prompts and saves configuration to config.json.           │
+│ login      Authenticate with Solo Hub using device-code login flow.                                               │
+│ whoami     Display current user profile, organization, and subscription info.                                     │
+│ download   Download a model from Solo Hub (format: org/model_name or solo:org/model_name).                        │
 │ robo       Robotics operations: motor setup, calibration, teleoperation, data recording, training, and inference  │
 │ serve      Start a model server with the specified model.                                                         │
 │ status     Check running models, system status, and configuration.                                                │
@@ -90,10 +87,28 @@ solo --help
 │ test       Test if the Solo CLI is running correctly. Performs an inference test to verify server functionality.  │
 │ stop       Stops Solo CLI services. You can specify a server type with 'ollama', 'vllm', or 'llama.cpp'           │
 │            Otherwise, all Solo services will be stopped.                                                          │
-│ download   Downloads a Hugging Face model using the huggingface repo id.                                          │
 ╰───────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
 
 
+```
+
+## Solo Hub - Authentication and Model Downloads
+
+```bash
+# Authenticate with Solo Hub
+solo login
+
+# Force re-authentication
+solo login --force
+
+# Check your profile and subscription
+solo whoami
+
+# Download a model from Solo Hub
+solo download org/model_name
+
+# Download to a specific local directory
+solo download org/model_name --local-dir ./my-models
 ```
 ## Interactive CLI for Robots
 **Find more details here: [Solo Robo Docs](solo/commands/robots/lerobot/README.md)**
