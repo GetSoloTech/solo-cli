@@ -9,8 +9,23 @@ from rich.console import Console
 
 console = Console()
 
-def handle_lerobot(config: dict, calibrate: str, motors: str, teleop: bool, record: bool, train: bool, inference: bool = False, replay: bool = False, auto_use: bool = False, replay_options: dict = None):
+def handle_lerobot(config: dict, calibrate: str, motors: str, teleop: bool, record: bool, train: bool, inference: bool = False, replay: bool = False, auto_use: bool = False, replay_options: dict = None, dry_run: bool = False):
     """Handle LeRobot framework operations"""
+    if dry_run:
+        import json
+        plan = {
+            "action": "lerobot_operation",
+            "mode": "train" if train else "record" if record else "inference" if inference else "replay" if replay else "teleop" if teleop else "motor_setup" if motors else "calibrate",
+            "parameters": {
+                "calibrate": calibrate,
+                "motors": motors,
+                "replay_options": replay_options
+            },
+            "status": "dry_run_plan_generated"
+        }
+        print(json.dumps(plan, indent=2))
+        return
+
     # Import lerobot for operations that need it immediately at top level
     # Calibration and motor setup do lazy imports with loading spinners
     needs_lerobot = train or record or inference or replay or teleop

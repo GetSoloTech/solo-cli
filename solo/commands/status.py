@@ -17,12 +17,18 @@ from solo.utils.hardware import is_ollama_natively_installed, check_ollama_servi
 
 console = Console()
 
+from solo.state import state
+
 def status():
     """Check running models, system status, and configuration."""
+    is_json = state.get("output_format", "text") == "json"
     
     # Check if config file exists
     if not os.path.exists(CONFIG_PATH):
-        typer.echo("❌ Configuration file not found. Please run 'solo setup' first.")
+        if is_json:
+            print(json.dumps({"error": "Configuration file not found"}, indent=2))
+        else:
+            typer.echo("❌ Configuration file not found. Please run 'solo setup' first.")
         return
     
     # Load configuration
@@ -30,7 +36,8 @@ def status():
         config = json.load(f)
     
     # Display configuration in one consolidated table
-    typer.echo("\n📊 Solo Configuration:")
+    if not is_json:
+        typer.echo("\n📊 Solo Configuration:")
     
     # Create a single configuration table
     config_table = Table(title="Configuration")
@@ -75,7 +82,8 @@ def status():
         config_table.add_row("User", "Role", user_config.get('role', 'Not set'))
     
     # Remove active model section from config table
-    console.print(config_table)
+    if not is_json:
+        console.print(config_table)
     
     # Check for running services
     running_services = []
@@ -250,6 +258,11 @@ def status():
                 "Running"
             ])
     
+    if is_json:
+        services_dict = [{"service": s[0], "model": s[1], "url": s[2], "status": s[3]} for s in running_services]
+        print(json.dumps({"configuration": config, "services": services_dict}, indent=2))
+        return
+
     # Display running services
     if running_services:
         typer.echo("\n🚀 Running Services:")

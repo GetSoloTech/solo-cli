@@ -11,20 +11,41 @@ def whoami() -> None:
     from solo.hub.client import SoloHubClient
     from solo.hub.errors import SoloAuthError
 
+    from solo.state import state
+
+    is_json = state.get("output_format", "text") == "json"
+
     try:
         token = ensure_authenticated()
     except SoloAuthError as e:
-        console.print(f"{e}", style="bold red")
+        if is_json:
+            import json
+            print(json.dumps({"error": str(e)}, indent=2))
+        else:
+            console.print(f"{e}", style="bold red")
         return
 
     try:
         client = SoloHubClient(token=token)
         profile = client.whoami()
     except SoloAuthError as e:
-        console.print(f"{e}", style="bold red")
+        if is_json:
+            import json
+            print(json.dumps({"error": str(e)}, indent=2))
+        else:
+            console.print(f"{e}", style="bold red")
         return
     except Exception as e:
-        console.print(f"Failed to fetch profile: {e}", style="bold red")
+        if is_json:
+            import json
+            print(json.dumps({"error": f"Failed to fetch profile: {e}"}, indent=2))
+        else:
+            console.print(f"Failed to fetch profile: {e}", style="bold red")
+        return
+
+    if is_json:
+        import json
+        print(json.dumps(profile, indent=2))
         return
 
     # User info

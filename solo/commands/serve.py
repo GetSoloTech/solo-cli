@@ -38,10 +38,21 @@ def serve(
 ):
     """Start a model server with the specified model.
     
-    If no server is specified, uses the server type from configuration.
-    To set up your configuration, run 'solo setup' first.
     """
     
+    from solo.state import state
+    if state.get("non_interactive"):
+        import sys
+        if not sys.stdin.isatty():
+            try:
+                stdin_data = json.load(sys.stdin)
+                model = stdin_data.get("model", model)
+                server = stdin_data.get("server", server)
+                port = stdin_data.get("port", port)
+                ui = stdin_data.get("ui", ui)
+            except Exception:
+                pass
+
     # Check if config file exists
     if not os.path.exists(CONFIG_PATH):
         typer.echo("❌ Configuration file not found. Please run 'solo setup' first.", err=True)

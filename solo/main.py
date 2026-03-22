@@ -39,6 +39,26 @@ def setup():
     """
     Set up the Solo CLI environment with interactive prompts and saves configuration to config.json.
     """
+    from solo.state import state
+    if state.get("non_interactive"):
+        if not sys.stdin.isatty():
+            try:
+                stdin_data = json.load(sys.stdin)
+                os.makedirs(os.path.dirname(CONFIG_PATH), exist_ok=True)
+                with open(CONFIG_PATH, 'w') as f:
+                    json.dump(stdin_data, f, indent=4)
+                if state.get("output_format") == "json":
+                    print(json.dumps({"status": "setup_complete"}))
+                else:
+                    typer.echo("✅ Setup complete via stdin configuration.")
+                return
+            except Exception as e:
+                if state.get("output_format") == "json":
+                    print(json.dumps({"error": f"Failed to parse stdin: {e}"}))
+                else:
+                    typer.echo(f"❌ Error parsing stdin configuration: {e}")
+                return
+
     typer.echo("💾 Setting up Solo CLI...")
     
     # Step 1: HuggingFace Authentication

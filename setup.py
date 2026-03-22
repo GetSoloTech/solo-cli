@@ -29,7 +29,8 @@ setup(
         "lerobot[feetech,dynamixel] @ git+https://github.com/GetSoloTech/solo-bot.git@main",
         "transformers",
         "accelerate",
-        "num2words"
+        "num2words",
+        "mcp"
     ],
     extras_require={
         "dev": ["pytest", "black", "isort"],
