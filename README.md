@@ -35,6 +35,20 @@ Solo-CLI powers users of Physical AI Inference by providing access to efficiency
   </table>
 </div>
 
+---
+
+> [!TIP]
+> **Skip the terminal entirely.** Rather than running setup commands yourself, tell an AI agent what you want and it handles everything — calibration, teleop, recording, training. Install the OpenClaw skills and use them in plain conversation:
+>
+> | Skill | What it does | Install |
+> |---|---|---|
+> | [`solo-cli-guide`](https://clawhub.ai/skills/solo-cli-guide) | Step-by-step tutor — walks you through each command, waits for your confirmation | `clawhub install solo-cli-guide` |
+> | [`solo-impl`](https://clawhub.ai/skills/solo-impl) | Autonomous executor — runs every command for you, opens terminal windows automatically | `clawhub install solo-impl` |
+>
+> Requires [OpenClaw](https://openclaw.ai). For a straightforward manual setup, follow the guide below.
+
+---
+
 ## Installation
 
 ### Prerequisites
