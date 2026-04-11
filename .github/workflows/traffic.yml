@@ -53,7 +53,7 @@ jobs:
             echo "GIST_ID=${GIST_ID}" >> $GITHUB_OUTPUT
           else
             echo "GIST_ID not found. Creating gist..."
-            GIST_ID=$(gh gist create clones.json views.json | awk -F / '{print $NF}')
+            GIST_ID=$(gh gist create --public clones.json views.json | awk -F / '{print $NF}')
             echo "${GIST_ID}" | gh secret set GIST_ID
             cp clones.json clones_before.json
             cp views.json views_before.json
