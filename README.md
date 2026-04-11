@@ -5,6 +5,8 @@
 [![Python 3.12+](https://img.shields.io/badge/Python-3.12%2B-blue.svg)](https://www.python.org/downloads/)
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/license/apache-2-0)
 [![PyPI Version](https://img.shields.io/pypi/v/solo-cli)](https://pypi.org/project/solo-cli/)
+[![GitHub Clones](https://img.shields.io/badge/dynamic/json?color=success&label=Clones&query=count&url=https://gist.githubusercontent.com/zeeshaan/GIST_ID/raw/clones.json&logo=github)](https://github.com/GetSoloTech/solo-cli)
+[![GitHub Views](https://img.shields.io/badge/dynamic/json?color=success&label=Views&query=count&url=https://gist.githubusercontent.com/zeeshaan/GIST_ID/raw/views.json&logo=github)](https://github.com/GetSoloTech/solo-cli)
 
 **Fastest way to deploy Physical AI on your hardware**
 

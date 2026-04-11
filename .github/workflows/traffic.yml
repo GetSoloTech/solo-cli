@@ -1,0 +1,90 @@
+name: Traffic Data Update
+
+on:
+  schedule:
+    - cron: "0 0 * * *"
+  workflow_dispatch:
+
+jobs:
+  update-traffic:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Authenticate gh CLI
+        run: echo "${{ secrets.SECRET_TOKEN }}" | gh auth login --with-token
+
+      - name: Fetch clone data
+        run: |
+          curl --user "${{ github.actor }}:${{ secrets.SECRET_TOKEN }}" \
+            -H "Accept: application/vnd.github.v3+json" \
+            https://api.github.com/repos/${{ github.repository }}/traffic/clones \
+            > clones.json
+
+      - name: Fetch view data
+        run: |
+          curl --user "${{ github.actor }}:${{ secrets.SECRET_TOKEN }}" \
+            -H "Accept: application/vnd.github.v3+json" \
+            https://api.github.com/repos/${{ github.repository }}/traffic/views \
+            > views.json
+
+      - name: Create or fetch gist
+        id: gist
+        run: |
+          if gh secret list | grep -q "GIST_ID"; then
+            echo "GIST_ID found"
+            GIST_ID="${{ secrets.GIST_ID }}"
+
+            HTTP_CODE=$(curl -s -o clones_before.json -w "%{http_code}" \
+              "https://gist.githubusercontent.com/${{ github.actor }}/${GIST_ID}/raw/clones.json")
+            if [ "$HTTP_CODE" != "200" ]; then
+              echo "clones.json not found in gist or gist invalid, using fresh data"
+              cp clones.json clones_before.json
+            fi
+
+            HTTP_CODE=$(curl -s -o views_before.json -w "%{http_code}" \
+              "https://gist.githubusercontent.com/${{ github.actor }}/${GIST_ID}/raw/views.json")
+            if [ "$HTTP_CODE" != "200" ]; then
+              echo "views.json not found in gist or gist invalid, using fresh data"
+              cp views.json views_before.json
+            fi
+
+            echo "GIST_ID=${GIST_ID}" >> $GITHUB_OUTPUT
+          else
+            echo "GIST_ID not found. Creating gist..."
+            GIST_ID=$(gh gist create clones.json views.json | awk -F / '{print $NF}')
+            echo "${GIST_ID}" | gh secret set GIST_ID
+            cp clones.json clones_before.json
+            cp views.json views_before.json
+            echo "GIST_ID=${GIST_ID}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Merge traffic data
+        run: |
+          python3 scripts/update_traffic.py --type clones
+          python3 scripts/update_traffic.py --type views
+
+      - name: Update gist
+        run: |
+          python3 -c "
+          import json
+          with open('clones.json') as f:
+              clones = f.read()
+          with open('views.json') as f:
+              views = f.read()
+          payload = {
+              'description': '${{ github.repository }} traffic statistics',
+              'files': {
+                  'clones.json': {'content': clones},
+                  'views.json': {'content': views}
+              }
+          }
+          with open('gist_payload.json', 'w') as f:
+              json.dump(payload, f)
+          "
+          curl -s -X PATCH \
+            --user "${{ github.actor }}:${{ secrets.SECRET_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            -d @gist_payload.json \
+            "https://api.github.com/gists/${{ steps.gist.outputs.GIST_ID }}" > /dev/null 2>&1
