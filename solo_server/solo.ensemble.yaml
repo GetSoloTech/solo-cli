@@ -1,0 +1,46 @@
+system_information:
+  operating_system: "Windows"
+  cpu: "AMD64 Family 23 Model 96 Stepping 1, AuthenticAMD"
+  cpu_cores: 8
+  memory: "15.42GB"
+  gpu:
+    vendor: "NVIDIA"
+    model: "NVIDIA GeForce GTX 1660 Ti"
+    memory: "6144MB"
+  compute_backend: "CUDA"
+
+server_options:
+  - name: "Ollama"
+    recommended: true
+    details: "Optimized for systems with NVIDIA GPUs and CUDA support. (Recommended for your system.)"
+  - name: "vLLM"
+    recommended: false
+    details: "High-performance inference engine, best suited for Linux environments."
+  - name: "Llama.cpp"
+    recommended: false
+    details: "Lightweight and cross-platform; runs efficiently on CPU-only systems."
+    - name: "LitGPT"
+    recommended: false
+    details: "Lightnight AI based PyTorch implementation."
+
+default_server: "Ollama"
+
+models:
+  solo-core-model:
+    model: "Qwen/Qwen2.5-1.5B-Instruct"
+    description: "Primary general-purpose model."
+  coding:
+    model: "qwen2.5-3b-coder"
+    description: "Optimized for code generation and programming tasks."
+  chat:
+    model: "deepseekr1-instruct-distill"
+    description: "Fine-tuned for conversational and chat applications."
+  robots:
+    model: "ottonomy-distill"
+    description: "Targeted for robotics and automation-related tasks."
+  healthcare_classification:
+    model: "palm"
+    description: "Optimized for healthcare data classification and analysis."
+  general:
+    model: "Qwen/Qwen2.5-1.5B-Instruct"
+    description: "Primary general-purpose model."
