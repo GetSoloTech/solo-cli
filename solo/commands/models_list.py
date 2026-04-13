@@ -16,11 +16,16 @@ from solo.utils.hardware import is_ollama_natively_installed, check_ollama_servi
 
 console = Console()
 
+from solo.state import state
+
 def list():
     """
     List all downloaded models available in HuggingFace cache and Ollama.
     """
-    typer.echo("\n🔍 Scanning for available models...")
+    is_json = state.get("output_format", "text") == "json"
+    
+    if not is_json:
+        typer.echo("\n🔍 Scanning for available models...")
     
     # Initialize tables
     hf_table = Table(title="HuggingFace Models")
@@ -34,6 +39,9 @@ def list():
     ollama_table.add_column("MODIFIED", style="yellow")
     ollama_table.add_column("TAGS", style="magenta")
     
+    hf_models_list = []
+    ollama_models_list = []
+
     # Check for HuggingFace models in cache
     hf_models_found = False
     cache_dir = os.path.expanduser("~/.cache/huggingface/hub")
@@ -92,6 +100,7 @@ def list():
                     
                     # Add to table with only model name, size, and modification date
                     hf_table.add_row(model_name, size_str, mod_time_str)
+                    hf_models_list.append({"model": model_name, "size": size_str, "modified": mod_time_str})
                     hf_models_found = True
     
     # Check for Ollama models
@@ -148,11 +157,14 @@ def list():
                             if ":" in name:
                                 name, tags = name.split(":", 1)
                             ollama_table.add_row(name, size, modified, tags)
+                            ollama_models_list.append({"name": name, "size": size, "modified": modified, "tags": tags})
                             ollama_models_found = True
         except subprocess.CalledProcessError as e:
-            typer.echo(f"⚠️  Error checking native Ollama models: {e}", err=True)
+            if not is_json:
+                typer.echo(f"⚠️  Error checking native Ollama models: {e}", err=True)
         except FileNotFoundError:
-            typer.echo("⚠️  Native Ollama not found or not accessible", err=True)
+            if not is_json:
+                typer.echo("⚠️  Native Ollama not found or not accessible", err=True)
     
     else:
         ollama_container = get_server_config('ollama').get('container_name', 'solo-ollama')
@@ -274,6 +286,7 @@ def list():
                                         if ":" in name:
                                             name, tags = name.split(":", 1)
                                         ollama_table.add_row(name, size, modified, tags)
+                                        ollama_models_list.append({"name": name, "size": size, "modified": modified, "tags": tags})
                                         ollama_models_found = True
                     finally:
                         # Stop the container if we started it
@@ -288,6 +301,10 @@ def list():
                               stdout=subprocess.DEVNULL, stderr=subprocess.PIPE)
     
     # Display results
+    if is_json:
+        print(json.dumps({"huggingface_models": hf_models_list, "ollama_models": ollama_models_list}, indent=2))
+        return
+
     if hf_models_found:
         console.print(hf_table)
     else:

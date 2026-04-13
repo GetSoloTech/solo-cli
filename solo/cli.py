@@ -1,7 +1,19 @@
 import typer
 from typing import Optional
+from solo.state import state
 
 app = typer.Typer()
+
+@app.callback()
+def main(
+    output: str = typer.Option("text", "--output", "-o", help="Output format: text or json"),
+    non_interactive: bool = typer.Option(False, "--non-interactive", help="Run without interactive prompts"),
+):
+    \"\"\"
+    Solo CLI: Fastest way to deploy Physical AI on your hardware.
+    \"\"\"
+    state["output_format"] = output
+    state["non_interactive"] = non_interactive
 
 # Lazy-loaded commands to improve CLI startup performance
 
@@ -30,6 +42,7 @@ def robo(
     episode: Optional[int] = typer.Option(None, "--episode", help="Episode number to replay (default: 0)"),
     follower_id: Optional[str] = typer.Option(None, "--follower-id", help="Follower arm ID for replay (e.g., 'follower_right')"),
     fps: Optional[int] = typer.Option(None, "--fps", help="Frames per second for replay (default: 30)"),
+    dry_run: bool = typer.Option(False, "--dry-run", help="Simulate physical actions without executing them (outputs JSON plan)"),
 ):
     """
     Robotics operations: motor setup, calibration, teleoperation, data recording, training, replay, and inference
@@ -43,7 +56,7 @@ def robo(
         diagnose_all_ports()
         return
     from solo.commands.robo import robo as _robo
-    _robo(motors, calibrate, teleop, record, train, inference, replay, yes, dataset, episode, follower_id, fps)
+    _robo(motors, calibrate, teleop, record, train, inference, replay, yes, dataset, episode, follower_id, fps, dry_run)
 
 
 @app.command()
@@ -182,6 +195,16 @@ def setup_usb_cmd(
     """
     from solo.commands.setup_usb import setup_usb
     setup_usb(auto_confirm=yes)
+
+
+@app.command()
+def mcp():
+    """
+    Run the Solo Model Context Protocol (MCP) Server.
+    Provides standard tools for AI Agents to check hardware, status, and download models.
+    """
+    from solo.mcp.mcp_server import start_mcp_server
+    start_mcp_server()
 
 
 if __name__ == "__main__":

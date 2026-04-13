@@ -24,6 +24,7 @@ def robo(
     episode: int = None,
     follower_id: str = None,
     fps: int = None,
+    dry_run: bool = False,
 ):
     """
     Robotics operations: motor setup, calibration, teleoperation, data recording, training, replay, and inference
@@ -50,4 +51,4 @@ def robo(
     } if replay else None
     
     # Use LeRobot handler directly
-    lerobot.handle_lerobot(config, calibrate, motors, teleop, record, train, inference, replay, yes, replay_options) 
+    lerobot.handle_lerobot(config, calibrate, motors, teleop, record, train, inference, replay, yes, replay_options, dry_run) 
