@@ -1,0 +1,23 @@
+domain: "education"
+hardware:
+  accelerator: "cpu"
+  workers_per_device: 8
+  timeout: false
+  stream: true
+default-llm: "gpt-4"
+models:
+  interest_tags:
+    - fast
+    - balanced
+    - innovative
+  prompt_seed: "Model prompt seed based on interests: fast, balanced, innovative"
+docker:
+  image: "your_docker_image"
+  port: 5070
+huggingface:
+  cache_dir: "huggingface"
+  token: "YOUR_HUGGINGFACE_API_TOKEN"
+soloconfig:
+  path: "soloconfig.py"
+  modelpath: "models"
+  storage_limit_gb: 20
