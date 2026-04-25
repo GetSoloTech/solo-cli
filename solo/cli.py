@@ -1,6 +1,7 @@
 import typer
 from typing import Optional
 
+
 app = typer.Typer()
 
 # Lazy-loaded commands to improve CLI startup performance
@@ -183,6 +184,17 @@ def setup_usb_cmd(
     from solo.commands.setup_usb import setup_usb
     setup_usb(auto_confirm=yes)
 
+@app.command()
+def audit(
+    file_path: str = typer.Argument(..., help="Path to the .parquet dataset file"),
+    threshold: float = typer.Option(0.5, help="Jump magnitude limit for jerky movement"),
+    plot: bool = typer.Option(False, "--plot", "-p", help="Visualize the movement jumps"),
+):
+    """
+    Audit a robotics dataset for kinematic glitches and stability.
+    """
+    from .commands.audit import data as _audit
+    _audit(file_path=file_path, threshold=threshold, plot=plot)
 
 if __name__ == "__main__":
     app()
