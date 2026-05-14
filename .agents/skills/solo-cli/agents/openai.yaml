@@ -1,0 +1,4 @@
+interface:
+  display_name: "Solo CLI"
+  short_description: "Operate Solo CLI for local AI and robotics"
+  default_prompt: "Use $solo-cli to set up, serve, inspect, or run robotics workflows with the Solo CLI."
